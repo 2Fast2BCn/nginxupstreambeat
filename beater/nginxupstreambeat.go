@@ -64,7 +64,6 @@ func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
 	logp.Info("nginxupstreambeat is running! Hit CTRL-C to stop it.")
 
 	ticker := time.NewTicker(bt.period)
-	counter := 1
 	for {
 		select {
 		case <-bt.done:
@@ -78,15 +77,15 @@ func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
 		if err != nil {
 			logp.Err("Fail to read Nginx upstream status: %v", err)
 		}
+		//logp.Println(s)
 		
 		event := common.MapStr{
 			"@timestamp": common.Time(time.Now()),
 			"type":       b.Name,
-			"counter":    counter,
+			"servers":    s["servers"],
 		}
 		bt.client.PublishEvent(event)
 		logp.Info("Event sent")
-		counter++
 	}
 }
 

@@ -4,10 +4,10 @@
 package config
 
 type Config struct {
-	NginxupstreamConfig NginxupstreamConfigConfig
+	Nginxupstreambeat NginxupstreambeatConfig
 }
 
-type NginxupstreamConfigConfig struct {
+type NginxupstreambeatConfig struct {
 	Period string `config:"period"`
 	Url string `config:"url"`
 }
