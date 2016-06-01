@@ -1,0 +1,88 @@
+{
+  "mappings": {
+    "_default_": {
+      "_all": {
+        "norms": false
+      },
+      "dynamic_templates": [
+        {
+          "fields": {
+            "mapping": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "match_mapping_type": "string",
+            "path_match": "fields.*"
+          }
+        }
+      ],
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "beat": {
+          "properties": {
+            "hostname": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            },
+            "name": {
+              "ignore_above": 1024,
+              "type": "keyword"
+            }
+          }
+        },
+        "nginx_upstream_status": {
+			"properties": {
+				"servers": {
+					"properties": {
+						"generation": {
+							"type": "long"
+						},
+						"server": {
+							"properties": {
+								"fall": {
+								  "type": "long"
+								},
+								"index": {
+								  "type": "long"
+								},
+								"name": {
+									"ignore_above": 1024,
+									"type": "keyword"
+								},
+								"port": {
+								  "type": "long"
+								},
+								"rise": {
+								  "type": "long"
+								},
+								"status": {
+									"ignore_above": 1024,
+									"type": "keyword"
+								},
+								"type": {
+									"ignore_above": 1024,
+									"type": "keyword"
+								},
+								"upstream": {
+									"ignore_above": 1024,
+									"type": "keyword"
+								},
+							}
+						},
+						"total": {
+							"type": "long"
+						},
+					}
+				},
+			}
+        },
+    }
+  },
+  "order": 0,
+  "settings": {
+    "index.refresh_interval": "5s"
+  },
+  "template": "nginxupstreambeat-*"
+}
