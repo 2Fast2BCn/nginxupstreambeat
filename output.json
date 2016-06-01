@@ -1,0 +1,72 @@
+{
+  "_index": "nginxupstreambeat-2016.06.01",
+  "_type": "nginxupstreambeat",
+  "_id": "AVUNpEVHiQS7wmdsqcR4",
+  "_score": 1,
+  "_source": {
+    "@timestamp": "2016-06-01T20:25:16.252Z",
+    "type": "nginxupstreambeat",
+    "nginx_upstream_status": {
+      "servers": {
+        "generation": 1,
+        "server": [
+          {
+            "fall": 0,
+            "index": 0,
+            "name": "10.60.46.11:9080",
+            "port": 0,
+            "rise": 10109,
+            "status": "up",
+            "type": "http",
+            "upstream": "websphere"
+          },
+          {
+            "fall": 0,
+            "index": 1,
+            "name": "10.60.46.11:9081",
+            "port": 0,
+            "rise": 1365,
+            "status": "up",
+            "type": "http",
+            "upstream": "websphere"
+          },
+          {
+            "fall": 0,
+            "index": 2,
+            "name": "10.60.46.12:9080",
+            "port": 0,
+            "rise": 27711,
+            "status": "up",
+            "type": "http",
+            "upstream": "websphere"
+          },
+          {
+            "fall": 0,
+            "index": 3,
+            "name": "10.60.46.12:9081",
+            "port": 0,
+            "rise": 58490,
+            "status": "up",
+            "type": "http",
+            "upstream": "websphere"
+          }
+        ],
+        "total": 4
+      }
+    },
+    "beat": {
+      "name": "hex-wgc-p-web01.hexagon.local",
+      "hostname": "hex-wgc-p-web01.hexagon.local"
+    },
+    "@version": "1",
+    "host": "hex-wgc-p-web01.hexagon.local",
+    "tags": [
+      "beats_input_raw_event"
+    ]
+  },
+  "fields": {
+    "@timestamp": [
+      1464812716252
+    ]
+  }
+}
