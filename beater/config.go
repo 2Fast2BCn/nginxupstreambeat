@@ -17,7 +17,7 @@ type NginxupstreamConfig struct {
 var (
 	defaultConfig = NginxupstreamConfig{
 		Period: 10 * time.Second,
-		Url:  string "http://127.0.0.1/nginx_pagespeed_status",
+		Url:  string "http://127.0.0.1/nginx_upstream_status",
 	}
 )
 
