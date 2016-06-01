@@ -2,80 +2,98 @@ package beater
 
 import (
 	"fmt"
-	"net/url"
 	"time"
+	"net/url"
 
 	"github.com/elastic/beats/libbeat/beat"
+	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
 	"github.com/elastic/beats/libbeat/publisher"
-	"github.com/elastic/2Fast2BCn/nginxupstreambeat/collector"
+	"github.com/2Fast2BCn/nginxupstreambeat/config"
+	"github.com/2Fast2BCn/nginxupstreambeat/collector"
 )
 
 type Nginxupstreambeat struct {
-	period time.Duration
-
-	TbConfig ConfigSettings
-	events   publisher.Client
-
-	url  url.URL
-
-	done chan struct{}
+	beatConfig *config.Config
+	done       chan struct{}
+	period     time.Duration
+	url        *url.URL
+	client     publisher.Client
 }
 
-func (tb *Nginxupstreambeat) Config(b *beat.Beat) error {
-
-	nginxupstreambeatSection := "nginxupstreambeat"
-
-	rawNnginxupstreambeatConfig, err := b.RawConfig.Child(nginxupstreambeatSection, -1)
-	if err != nil {
-		logp.Err("Error reading configuration file: %v", err)
-		return err
+// Creates beater
+func New() *Nginxupstreambeat {
+	return &Nginxupstreambeat{
+		done: make(chan struct{}),
 	}
+}
 
-	tb.TbConfig.Nnginxupstreambeat = defaultConfig
-	err = rawNnginxupstreambeatConfig.Unpack(&tb.TbConfig.Nnginxupstreambeat)
+func (bt *Nginxupstreambeat) Config(b *beat.Beat) error {
+	// Load beater beatConfig
+	err := b.RawConfig.Unpack(&bt.beatConfig)
 	if err != nil {
-		logp.Err("Error reading configuration file: %v", err)
-		return err
+		return fmt.Errorf("Error reading config file: %v", err)
 	}
-
-	nginxupstreambeatConfig := tb.TbConfig.Nnginxupstreambeat
-	tb.period = nginxupstreambeatConfig.Period
-	tb.url = nginxupstreambeatConfig.Url
 
 	logp.Debug("nginxupstreambeat", "Init nginxupstreambeat")
-	logp.Debug("nginxupstreambeat", "Period %v", tb.period)
-	logp.Debug("nginxupstreambeat", "Url %t", tb.url)
+	logp.Debug("nginxupstreambeat", "Period %v", bt.period)
+	logp.Debug("nginxupstreambeat", "Url %v", bt.url)
 
 	return nil
 }
 
-func (t *Nnginxupstreambeat) Setup(b *beat.Beat) error {
-	t.events = b.Publisher.Connect()
-	t.done = make(chan struct{})
-	return nil
-}
+func (bt *Nginxupstreambeat) Setup(b *beat.Beat) error {
+	// Setting default period if not set
+	if bt.beatConfig.Nginxupstreambeat.Period == "" {
+		bt.beatConfig.Nginxupstreambeat.Period = "1s"
+	}
 
-func (t *Nnginxupstreambeat) Run(b *beat.Beat) error {
-	t.isAlive = true
-	t.initProcStats()
+	bt.client = b.Publisher.Connect()
+
 	var err error
-	for t.isAlive {
-		time.Sleep(t.period)
-		err = collector.newUpstreamCollector()
-		if err != nil {
-			logp.Err("Error reading status: %v", err)
-		}
-	return err
-}
+	bt.period, err = time.ParseDuration(bt.beatConfig.Nginxupstreambeat.Period)
+	if err != nil {
+		return err
+	}
+	//add parse URL ???
 
-func (tb *Nnginxupstreambeat) Cleanup(b *beat.Beat) error {
 	return nil
 }
 
-func (t *Nnginxupstreambeat) Stop() {
-	logp.Info("Send stop signal to nginxupstreambeat main loop")
-	t.isAlive = false
-	close(t.done)
-	t.events.Close()
+func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
+	logp.Info("nginxupstreambeat is running! Hit CTRL-C to stop it.")
+
+	ticker := time.NewTicker(bt.period)
+	counter := 1
+	for {
+		select {
+		case <-bt.done:
+			return nil
+		case <-ticker.C:
+		}
+
+		var c collector.Collector
+		c = collector.NewUpstreamCollector()
+		s, err := c.Collect(*bt.url)
+		if err != nil {
+			logp.Err("Fail to read Nginx upstream status: %v", err)
+		}
+		
+		event := common.MapStr{
+			"@timestamp": common.Time(time.Now()),
+			"type":       b.Name,
+			"counter":    counter,
+		}
+		bt.client.PublishEvent(event)
+		logp.Info("Event sent")
+		counter++
+	}
+}
+
+func (bt *Nginxupstreambeat) Cleanup(b *beat.Beat) error {
+	return nil
+}
+
+func (bt *Nginxupstreambeat) Stop() {
+	close(bt.done)
 }

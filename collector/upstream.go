@@ -80,6 +80,6 @@ func (c *UpstreamCollector) Collect(u url.URL) (map[string]interface{}, error) {
 	if err != nil {
 		logp.Err("Error closing: %v", err)
 	}
-    fmt.Println(dat)
+	fmt.Println(dat)
 	return dat, nil
 }
