@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"io/ioutil"
 	"encoding/json"
 
 	"github.com/elastic/beats/libbeat/logp"
@@ -13,6 +14,27 @@ import (
 type UpstreamCollector struct {
 	http     *http.Client
 	requests int
+}
+
+type Response struct {
+	Servers	Servers    `json:"servers"`
+}
+
+type Servers struct {
+	Total   int         `json:"total"`
+	Generation []string `json:"generation"`
+	Server	[]Server    `json:"server"`
+}
+
+type Server struct {
+	Index   int         `json:"index"`
+	Upstream string     `json:"upstream"`
+	Name	 string     `json:"name"`
+	Status	 string     `json:"status"`
+	Rise	 int        `json:"rise"`
+	Fall	 int        `json:"fall"`
+	Type	 string     `json:"type"`
+	Port	 int        `json:"port"`
 }
 
 // NewStubCollector constructs a new UpstreamCollector.
@@ -46,11 +68,18 @@ func (c *UpstreamCollector) Collect(u url.URL) (map[string]interface{}, error) {
 	//		{"index": 3, "upstream": "websphere", "name": "10.60.42.9:9081", "status": "up", "rise": 764, "fall": 0, "type": "http", "port": 0}
 	//	]
 	// }}
-	//res.Body
-
-	return map[string]interface{}{
-		"total":   active,
-		"generation":  accepts,
-		"server":  
-	}, nil
+	//
+	var dat map[string]interface{}
+	body, err := ioutil.ReadAll(res.Body)
+	if err := json.Unmarshal([]byte(body), &dat); err != nil {
+		panic(err)
+	}
+	
+	res.Body.Close()
+	
+	if err != nil {
+		logp.Err("Error closing: %v", err)
+	}
+    fmt.Println(dat)
+	return dat, nil
 }

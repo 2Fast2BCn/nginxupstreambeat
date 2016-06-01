@@ -64,10 +64,8 @@ func (t *Nnginxupstreambeat) Run(b *beat.Beat) error {
 		time.Sleep(t.period)
 		err = collector.newUpstreamCollector()
 		if err != nil {
-			logp.Err("Error reading system stats: %v", err)
+			logp.Err("Error reading status: %v", err)
 		}
-...
-	}
 	return err
 }
 
@@ -77,6 +75,7 @@ func (tb *Nnginxupstreambeat) Cleanup(b *beat.Beat) error {
 
 func (t *Nnginxupstreambeat) Stop() {
 	logp.Info("Send stop signal to nginxupstreambeat main loop")
+	t.isAlive = false
 	close(t.done)
 	t.events.Close()
 }
