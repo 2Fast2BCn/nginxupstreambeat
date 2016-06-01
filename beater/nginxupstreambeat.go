@@ -80,9 +80,9 @@ func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
 		//logp.Println(s)
 		
 		event := common.MapStr{
-			"@timestamp": common.Time(time.Now()),
-			"type":       b.Name,
-			"servers":    s["servers"],
+			"@timestamp":                common.Time(time.Now()),
+			"type":                      b.Name,
+			"nginx_upstream_status":     s,
 		}
 		bt.client.PublishEvent(event)
 		logp.Info("Event sent")
