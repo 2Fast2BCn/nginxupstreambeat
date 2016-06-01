@@ -30,14 +30,14 @@ func New() *Nginxupstreambeat {
 
 func (bt *Nginxupstreambeat) Config(b *beat.Beat) error {
         // Load beater beatConfig
-        err := b.LoadConfig()
+        err := b.RawConfig.Unpack(&bt.beatConfig)
         if err != nil {
                 return fmt.Errorf("Error reading config file: %v", err)
         }
 
         logp.Debug("nginxupstreambeat", "Init nginxupstreambeat")
-        logp.Debug("nginxupstreambeat", "Period %v", bt.period)
-        logp.Debug("nginxupstreambeat", "Url %v", bt.url)
+        logp.Debug("nginxupstreambeat", "Period %v", bt.beatConfig.Nginxupstreambeat.Period)
+        logp.Debug("nginxupstreambeat", "Url %v", bt.beatConfig.Nginxupstreambeat.Url)
 
         return nil
 }
@@ -48,14 +48,18 @@ func (bt *Nginxupstreambeat) Setup(b *beat.Beat) error {
                 bt.beatConfig.Nginxupstreambeat.Period = "1s"
         }
 
-        bt.client = b.Publisher.Client()
+        bt.client = b.Publisher.Connect()
 
         var err error
         bt.period, err = time.ParseDuration(bt.beatConfig.Nginxupstreambeat.Period)
         if err != nil {
                 return err
         }
-        //add parse URL ???
+
+        bt.url, err = url.Parse(bt.beatConfig.Nginxupstreambeat.Url)
+        if err != nil {
+                return err
+        }
 
         return nil
 }
@@ -65,27 +69,27 @@ func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
 
         ticker := time.NewTicker(bt.period)
         for {
-			select {
-				case <-bt.done:
-					return nil
-				case <-ticker.C:
-			}
+                        select {
+                                case <-bt.done:
+                                        return nil
+                                case <-ticker.C:
+                        }
 
-			var c collector.Collector
-			c = collector.NewUpstreamCollector()
-			s, err := c.Collect(*bt.url)
-			if err != nil {
-				logp.Err("Fail to read Nginx upstream status: %v", err)
-			}
-			//logp.Println(s)
+                        var c collector.Collector
+                        c = collector.NewUpstreamCollector()
+                        s, err := c.Collect(*bt.url)
+                        if err != nil {
+                                logp.Err("Fail to read Nginx upstream status: %v", err)
+                        }
+                        //logp.Println(s)
 
-			event := common.MapStr{
-				"@timestamp": common.Time(time.Now()),
-				"type":       b.Name,
-				"nginx_upstream_status":     s,
-			}
-			bt.client.PublishEvent(event)
-			logp.Info("Event sent")
+                        event := common.MapStr{
+                                "@timestamp": common.Time(time.Now()),
+                                "type":       b.Name,
+                                "nginx_upstream_status":     s,
+                        }
+                        bt.client.PublishEvent(event)
+                        logp.Info("Event sent")
         }
 }
 

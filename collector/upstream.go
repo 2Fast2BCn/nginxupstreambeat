@@ -75,8 +75,6 @@ func (c *UpstreamCollector) Collect(u url.URL) (map[string]interface{}, error) {
 		panic(err)
 	}
 	
-	res.Body.Close()
-	
 	if err != nil {
 		logp.Err("Error closing: %v", err)
 	}

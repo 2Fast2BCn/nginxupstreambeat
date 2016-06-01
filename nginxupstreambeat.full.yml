@@ -1,10 +1,10 @@
 ########################### nginxupstreambeat Configuration #############################
 #======================== nginxupstreambeat specific options ============================
 # In seconds, defines how often to read server statistics
-nginxupstreambeat.period: 10
+nginxupstreambeat.period: 10s
 
 # upstream status url
-nginxupstreambeat.url: http://127.0.0.1/nginx_upstream_status
+nginxupstreambeat.url: http://127.0.0.1/nginx_upstream_status?format=json
 
 #================================ General =====================================
 
