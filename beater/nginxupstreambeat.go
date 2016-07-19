@@ -1,102 +1,71 @@
 package beater
 
 import (
-        "fmt"
-        "time"
-        "net/url"
+	"fmt"
+	"time"
+	"net/url"
 
-        "github.com/elastic/beats/libbeat/beat"
-        "github.com/elastic/beats/libbeat/common"
-        "github.com/elastic/beats/libbeat/logp"
-        "github.com/elastic/beats/libbeat/publisher"
-        "github.com/2Fast2BCn/nginxupstreambeat/config"
-        "github.com/2Fast2BCn/nginxupstreambeat/collector"
+	"github.com/elastic/beats/libbeat/beat"
+	"github.com/elastic/beats/libbeat/common"
+	"github.com/elastic/beats/libbeat/logp"
+	"github.com/elastic/beats/libbeat/publisher"
+
+	"github.com/2Fast2BCn/nginxupstreambeat/config"
+	"github.com/2Fast2BCn/nginxupstreambeat/collector"
 )
 
 type Nginxupstreambeat struct {
-        beatConfig *config.Config
-        done       chan struct{}
-        period     time.Duration
-        url        *url.URL
-        client     publisher.Client
+	done       chan struct{}
+	config     config.Config
+	client     publisher.Client
 }
 
 // Creates beater
-func New() *Nginxupstreambeat {
-        return &Nginxupstreambeat{
-                done: make(chan struct{}),
-        }
-}
+func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
+	config := config.DefaultConfig
+	if err := cfg.Unpack(&config); err != nil {
+		return nil, fmt.Errorf("Error reading config file: %v", err)
+	}
 
-func (bt *Nginxupstreambeat) Config(b *beat.Beat) error {
-        // Load beater beatConfig
-        err := b.RawConfig.Unpack(&bt.beatConfig)
-        if err != nil {
-                return fmt.Errorf("Error reading config file: %v", err)
-        }
-
-        logp.Debug("nginxupstreambeat", "Init nginxupstreambeat")
-        logp.Debug("nginxupstreambeat", "Period %v", bt.beatConfig.Nginxupstreambeat.Period)
-        logp.Debug("nginxupstreambeat", "Url %v", bt.beatConfig.Nginxupstreambeat.Url)
-
-        return nil
-}
-
-func (bt *Nginxupstreambeat) Setup(b *beat.Beat) error {
-        // Setting default period if not set
-        if bt.beatConfig.Nginxupstreambeat.Period == "" {
-                bt.beatConfig.Nginxupstreambeat.Period = "1s"
-        }
-
-        bt.client = b.Publisher.Connect()
-
-        var err error
-        bt.period, err = time.ParseDuration(bt.beatConfig.Nginxupstreambeat.Period)
-        if err != nil {
-                return err
-        }
-
-        bt.url, err = url.Parse(bt.beatConfig.Nginxupstreambeat.Url)
-        if err != nil {
-                return err
-        }
-
-        return nil
+	bt := &Nginxupstreambeat{
+		done: make(chan struct{}),
+		config: config,
+	}
+	return bt, nil
 }
 
 func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
-        logp.Info("nginxupstreambeat is running! Hit CTRL-C to stop it.")
+	logp.Info("nginxupstreambeat is running! Hit CTRL-C to stop it.")
 
-        ticker := time.NewTicker(bt.period)
-        for {
-                        select {
-                                case <-bt.done:
-                                        return nil
-                                case <-ticker.C:
-                        }
+	bt.client = b.Publisher.Connect()
+	ticker := time.NewTicker(bt.config.Period)
+	counter := 1
+	for {
+		select {
+		case <-bt.done:
+			return nil
+		case <-ticker.C:
+		}
 
-                        var c collector.Collector
-                        c = collector.NewUpstreamCollector()
-                        s, err := c.Collect(*bt.url)
-                        if err != nil {
-                                logp.Err("Fail to read Nginx upstream status: %v", err)
-                        }
-                        //logp.Println(s)
+		var c collector.Collector
+		c = collector.NewUpstreamCollector()
+		s, err := c.Collect(*bt.config.Url)
+		if err != nil {
+				logp.Err("Fail to read Nginx upstream status: %v", err)
+		}
+		//logp.Println(s)
 
-                        event := common.MapStr{
-                                "@timestamp": common.Time(time.Now()),
-                                "type":       b.Name,
-                                "nginx_upstream_status":     s,
-                        }
-                        bt.client.PublishEvent(event)
-                        logp.Info("Event sent")
-        }
-}
-
-func (bt *Nginxupstreambeat) Cleanup(b *beat.Beat) error {
-        return nil
+		event := common.MapStr{
+				"@timestamp": common.Time(time.Now()),
+				"type":       b.Name,
+				"nginx_upstream_status":     s,
+		}
+		bt.client.PublishEvent(event)
+		logp.Info("Event sent")
+	}
 }
 
 func (bt *Nginxupstreambeat) Stop() {
-        close(bt.done)
+	bt.client.Close()
+	close(bt.done)
 }

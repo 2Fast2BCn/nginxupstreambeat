@@ -12,7 +12,7 @@ var Version = "0.0.1"
 var Name = "nginxupstreambeat"
 
 func main() {
-	err := beat.Run(Name, Version, beater.New())
+	err := beat.Run(Name, Version, beater.New)
 	if err != nil {
 		os.Exit(1)
 	}

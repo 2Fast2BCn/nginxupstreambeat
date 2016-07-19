@@ -1,10 +1,33 @@
 BEATNAME=nginxupstreambeat
-SYSTEM_TESTS=true
+BEAT_DIR=github.com/2Fast2BCn
+SYSTEM_TESTS=false
+TEST_ENVIRONMENT=false
+ES_BEATS?=${GOPATH}/src/github.com/elastic/beats
+GOPACKAGES=$(shell glide novendor)
+PREFIX?=.
 
-# Only crosscompile for linux because other OS'es use cgo.
-GOX_OS=linux
+# Path to the libbeat Makefile
+-include $(ES_BEATS)/libbeat/scripts/Makefile
 
-include ../libbeat/scripts/Makefile
+# Initial beat setup
+.PHONY: setup
+setup:
+	make update
+
+.PHONY: git-init
+git-init:
+	git init
+	git add README.md CONTRIBUTING.md
+	git commit -m "Initial commit"
+	git add LICENSE
+	git commit -m "Add the LICENSE"
+	git add .gitignore
+	git commit -m "Add git settings"
+	git add .
+	git reset -- .travis.yml
+	git commit -m "Add nginxupstreambeat"
+	git add .travis.yml
+	git commit -m "Add Travis CI"
 
 # This is called by the beats packer before building starts
 .PHONY: before-build

@@ -3,11 +3,17 @@
 
 package config
 
+import (
+	"time"
+	"net/url"
+)
+
 type Config struct {
-	Nginxupstreambeat NginxupstreambeatConfig
+	Period  time.Duration `config:"period"`
+	Url     *url.URL      `config:"url"`
 }
 
-type NginxupstreambeatConfig struct {
-	Period string `config:"period"`
-	Url string `config:"url"`
+var DefaultConfig = Config{
+	Period: 1 * time.Second,
+	Url: "http://127.0.0.1/nginx_upstream_status"
 }
