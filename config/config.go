@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	Period  time.Duration `config:"period"`
+	Period  time.Duration `config:"period"`,
 	Url     *url.URL      `config:"url"`
 }
 

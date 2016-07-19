@@ -1,0 +1,5 @@
+= Nginxupstreambeat Docs
+
+Welcome to the Nginxupstreambeat documentation.
+
+

@@ -1,0 +1,8 @@
+################### Nginxupstreambeat Configuration Example #########################
+
+############################# Nginxupstreambeat ######################################
+
+nginxupstreambeat:
+  # Defines how often an event is sent to the output
+  period: 1s
+  url: http://localhost/nginx_upstream_status
