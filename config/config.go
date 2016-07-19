@@ -3,14 +3,11 @@
 
 package config
 
-import (
-	"time"
-	"net/url"
-)
+import "time"
 
 type Config struct {
 	Period  time.Duration `config:"period"`
-	Url     url.URL       `config:"url"`
+	Url     string        `config:"url"`
 }
 
 var DefaultConfig = Config {
