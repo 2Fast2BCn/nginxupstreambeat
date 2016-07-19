@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	Period  time.Duration `config:"period"`,
-	Url     *url.URL      `config:"url"`
+	Period  time.Duration `config:"period"`
+	Url     url.URL       `config:"url"`
 }
 
-var DefaultConfig = Config{
+var DefaultConfig = Config {
 	Period: 1 * time.Second,
-	Url: "http://127.0.0.1/nginx_upstream_status"
+	Url: "http://127.0.0.1/nginx_upstream_status",
 }
