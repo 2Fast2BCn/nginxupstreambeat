@@ -49,11 +49,11 @@ func (bt *Nginxupstreambeat) Run(b *beat.Beat) error {
 
 		var c collector.Collector
 		c = collector.NewUpstreamCollector()
-		u, err := url.Parse(*bt.config.Url)
+		u, err := url.Parse(bt.config.Url)
 		if err != nil {
 				logp.Err("Fail to parse Nginx upstream status url: %v", err)
 		}
-		s, err := c.Collect(u)
+		s, err := c.Collect(*u)
 		if err != nil {
 				logp.Err("Fail to read Nginx upstream status: %v", err)
 		}
