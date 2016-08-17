@@ -2,14 +2,17 @@
   "mappings": {
     "_default_": {
       "_all": {
-        "norms": false
+        "norms": {
+          "enabled": false
+        }
       },
       "dynamic_templates": [
         {
           "fields": {
             "mapping": {
               "ignore_above": 1024,
-              "type": "keyword"
+              "index": "not_analyzed",
+              "type": "string"
             },
             "match_mapping_type": "string",
             "path_match": "fields.*"
@@ -24,11 +27,13 @@
           "properties": {
             "hostname": {
               "ignore_above": 1024,
-              "type": "keyword"
+              "index": "not_analyzed",
+              "type": "string"
             },
             "name": {
               "ignore_above": 1024,
-              "type": "keyword"
+              "index": "not_analyzed",
+              "type": "string"
             }
           }
         },
@@ -49,7 +54,8 @@
 							},
 							"name": {
 								"ignore_above": 1024,
-								"type": "keyword"
+								"index": "not_analyzed",
+								"type": "string"
 							},
 							"port": {
 								"type": "long"
@@ -59,15 +65,18 @@
 							},
 							"status": {
 								"ignore_above": 1024,
-								"type": "keyword"
+								"index": "not_analyzed",
+								"type": "string"
 							},
 							"type": {
 								"ignore_above": 1024,
-								"type": "keyword"
+								"index": "not_analyzed",
+								"type": "string"
 							},
 							"upstream": {
 								"ignore_above": 1024,
-								"type": "keyword"
+								"index": "not_analyzed",
+								"type": "string"
 							}
 						}
 					},
