@@ -41,6 +41,9 @@
 		"properties": {
 			"servers": {
 				"properties": {
+					"down": {
+						"type": "long"
+					},
 					"generation": {
 						"type": "long"
 					},
@@ -81,6 +84,9 @@
 						}
 					},
 					"total": {
+						"type": "long"
+					},
+					"up": {
 						"type": "long"
 					}
 				}
